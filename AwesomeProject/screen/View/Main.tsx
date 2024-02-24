@@ -3,21 +3,21 @@ import { TouchableOpacity, Text, StyleSheet, SafeAreaView, Dimensions, Image, Vi
 import  * as KakaoLogin from '@react-native-seoul/kakao-login';
 import { KakaoOAuthToken, login } from '@react-native-seoul/kakao-login';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth'
+import NaverLogin, { NaverLoginResponse, GetProfileResponse } from '@react-native-seoul/naver-login';
 
 export default function Main({navigation} : any) {
+    const [result , setResult] = useState('');
 
 
     useEffect(() => {
 
-        const googleConfigure = async() => {
-            await GoogleSignin.configure({
-                webClientId : '340780793926-c80cndr8lsl9iduc0qhucpk7rl7hbh5v.apps.googleusercontent.com'
-            })
-        }
+        // const googleConfigure = async() => {
+        //     await GoogleSignin.configure({
+        //         webClientId : '340780793926-c80cndr8lsl9iduc0qhucpk7rl7hbh5v.apps.googleusercontent.com'
+        //     })
+        // }
 
-        googleConfigure()
+        // googleConfigure()
     })
     
     const signInWithKakao = async (): Promise<void> => {
@@ -50,16 +50,40 @@ export default function Main({navigation} : any) {
             ]);
         }
     }
-    
-    const naverSignIn = () => {
 
+    const androidKeys = {
+        consumerKey: "RXWXkXCQzKJEQMy5rEdW",
+        consumerSecret: "omkincgN1v",
+        appName: "com.awesomeproject"
+    };
+      
+    const naverSignIn = async(props:any):Promise<void> => {
+        try{
+            const {failureResponse, successResponse} = await NaverLogin.login(props);
+            const token = successResponse;
+            const userAccessToken = token!.accessToken;
+            const userInfo = await NaverLogin.getProfile(userAccessToken);
+            const userEmail = userInfo.response.email;
+            const userAge = userInfo.response.birthyear;
+            const userProfileImg = userInfo.response.profile_image;
+            const userGender = userInfo.response.gender;
+            const userNickNmae = userInfo.response.nickname;
+
+            if (userAccessToken) {
+                navigation.navigate("Tabs");
+            }
+
+            setResult(JSON.stringify(token));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    const onGoogleButtonPress = async () => {
-        const { idToken } = await GoogleSignin.signIn();
-        const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-        return auth().signInWithCredential(googleCredential);
-    }
+    // const onGoogleButtonPress = async () => {
+    //     const { idToken } = await GoogleSignin.signIn();
+    //     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    //     return auth().signInWithCredential(googleCredential);
+    // }
 
     return (
         <SafeAreaView style={styles.SafeAreaView}>
@@ -73,18 +97,18 @@ export default function Main({navigation} : any) {
                         <Text style={styles.text}>카카오로 로그인</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={naverSignIn} style={styles.naverLoginBtn}>
-                    <View style={styles.loginView}> 
+                <TouchableOpacity onPress={()=>naverSignIn(androidKeys)} style={styles.naverLoginBtn}>
+                    <View style={styles.loginView}>
                         <Image source={require('../../assets/NaverImg.png')} />
                         <Text style={styles.text}>네이버로  로그인</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.googleLoginBtn} onPress={onGoogleButtonPress}>
-                    <View style={styles.loginView}> 
+                {/* <TouchableOpacity onPress={googleSignIn} style={styles.googleLoginBtn}>
+                    <View style={styles.loginView}>
                         <Image source={require('../../assets/GoogleImg.png')} />
                         <Text style={styles.text}>구글로  로그인</Text>
                     </View> 
-                </TouchableOpacity>;
+                </TouchableOpacity> */}
                 <TouchableOpacity onPress={() => navigation.navigate("Tabs")} style={styles.moveHomeBtn}>
                     <View style={styles.loginView}>
                         <Text style={styles.text}>홈 화면으로 이동</Text>
