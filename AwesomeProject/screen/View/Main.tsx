@@ -3,8 +3,22 @@ import { TouchableOpacity, Text, StyleSheet, SafeAreaView, Dimensions, Image, Vi
 import  * as KakaoLogin from '@react-native-seoul/kakao-login';
 import { KakaoOAuthToken, login } from '@react-native-seoul/kakao-login';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth'
 
 export default function Main({navigation} : any) {
+
+
+    useEffect(() => {
+
+        const googleConfigure = async() => {
+            await GoogleSignin.configure({
+                webClientId : '340780793926-c80cndr8lsl9iduc0qhucpk7rl7hbh5v.apps.googleusercontent.com'
+            })
+        }
+
+        googleConfigure()
+    })
     
     const signInWithKakao = async (): Promise<void> => {
         try {
@@ -36,32 +50,17 @@ export default function Main({navigation} : any) {
             ]);
         }
     }
-
-    // const login = () => {
-    //     KakaoLogin.login().then((result) => {
-    //         console.log("Login Success", JSON.stringify(result));
-    //         // getProfile();
-    //     }).catch((error) => {
-    //         if (error.code === 'E_CANCELLED_OPERATION') {
-    //             console.log("Login Cancel", error.message);
-    //         } else {
-    //             console.log(`Login Fail(code:${error.code})`, error.message);
-    //         }
-    //     });
-    // };
-
+    
     const naverSignIn = () => {
 
     }
 
-    const googleSignIn = () => {
-
+    const onGoogleButtonPress = async () => {
+        const { idToken } = await GoogleSignin.signIn();
+        const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+        return auth().signInWithCredential(googleCredential);
     }
 
-    useEffect(() => {
-    }, []);
-
-    
     return (
         <SafeAreaView style={styles.SafeAreaView}>
             <Image source={require('../../assets/loginTopImg.png')} style={styles.loginTopImg}/>
@@ -80,12 +79,12 @@ export default function Main({navigation} : any) {
                         <Text style={styles.text}>네이버로  로그인</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={googleSignIn} style={styles.googleLoginBtn}>
+                <TouchableOpacity style={styles.googleLoginBtn} onPress={onGoogleButtonPress}>
                     <View style={styles.loginView}> 
                         <Image source={require('../../assets/GoogleImg.png')} />
                         <Text style={styles.text}>구글로  로그인</Text>
-                    </View>
-                </TouchableOpacity>
+                    </View> 
+                </TouchableOpacity>;
                 <TouchableOpacity onPress={() => navigation.navigate("Tabs")} style={styles.moveHomeBtn}>
                     <View style={styles.loginView}>
                         <Text style={styles.text}>홈 화면으로 이동</Text>
